@@ -1,0 +1,11 @@
+require: rubocop-rspec
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+  Enabled: false
+
+Style/BlockLength:
+  Exclude:
+    - 'Rakefile'
+    - '**/*.rake'
+    - 'test/**/*.rb'
