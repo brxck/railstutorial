@@ -1,5 +1,5 @@
 module SessionsHelper
-  
+
   # Logs in the given user.
   def log_in(user)
     # Creates a temporary cookie
@@ -15,10 +15,15 @@ module SessionsHelper
 
   # Returns the current logged-in user (if any).
   def current_user
-    # Conditiona assignment lets us query the database only once.
-    @current_user ||= User.find_by(id: session[:user_id])
-    # #find_by returns nil when a user doesn't exist,
-    # while #find raises an exception.
+    if (user_id = session[:user_id])
+      @current_user ||= User.find_by(id: user_id)
+    elsif (user_id = cookies.signed[:user_id])
+      user = User.find_by(id: user_id)
+      if user && user.authenticated?(cookies[:remember_token])
+        log_in user
+        @current_user = user
+      end
+    end
   end
 
   def logged_in?
@@ -27,7 +32,14 @@ module SessionsHelper
 
   # Logs out the current user.
   def log_out
+    forget(current_user)
     session.delete(:user_id)
     @current_user = nil
+  end
+
+  def forget(user)
+    user.forget
+    cookies.delete(:user_id)
+    cookies.delete(:remember_token)
   end
 end
